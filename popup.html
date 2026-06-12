@@ -41,6 +41,29 @@
     cursor: pointer;
   }
   .seg button.active { background: var(--accent-dim); color: #fff; }
+  /* 带气泡提示的分段控件：overflow 改为可见，圆角移到按钮上 */
+  #modeSeg { overflow: visible; }
+  #modeSeg button:first-child { border-radius: 5px 0 0 5px; }
+  #modeSeg button:last-child { border-radius: 0 5px 5px 0; }
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    width: max-content;
+    max-width: 230px;
+    background: #2c3038;
+    color: #e8eaed;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: left;
+    padding: 6px 9px;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .45);
+    z-index: 20;
+    pointer-events: none;
+  }
   .toolbar {
     display: flex;
     align-items: center;
@@ -273,8 +296,8 @@
 
   <div class="toolbar">
     <div class="seg" id="modeSeg">
-      <button data-mode="smart" class="active">智能提取</button>
-      <button data-mode="full">完整页面</button>
+      <button data-mode="smart" class="active" data-tip="自动识别正文区域，过滤导航、侧栏、广告等噪音，结果干净">智能提取</button>
+      <button data-mode="full" data-tip="抓取整页全部内容，只去除脚本等技术噪音，不会漏但较杂">完整页面</button>
     </div>
     <div class="toolbar-right">
       <label class="auto" title="打开弹窗时自动提取当前页面">
