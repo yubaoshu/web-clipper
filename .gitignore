@@ -1,0 +1,9 @@
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# scratch
+test.md
+*.zip

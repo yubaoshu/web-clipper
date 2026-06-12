@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --bg: #14161a;
+    --panel: #1d2026;
+    --line: #2c3038;
+    --text: #e8eaed;
+    --muted: #8b919c;
+    --accent: #4cc2a8;
+    --accent-dim: #2e7a6a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 380px;
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+  }
+  header h1 { font-size: 14px; font-weight: 600; letter-spacing: .02em; }
+  .seg {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .seg button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .seg button.active { background: var(--accent-dim); color: #fff; }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  #batchToggle {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  #batchToggle.on { background: var(--accent-dim); border-color: var(--accent-dim); color: #fff; }
+  .toolbar-right { display: flex; align-items: center; gap: 10px; }
+  .auto {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .auto input { accent-color: var(--accent); cursor: pointer; }
+  #metaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px 0;
+  }
+  #meta {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #refreshBtn {
+    flex: none;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  #refreshBtn:hover { border-color: var(--accent); }
+  #manualStart {
+    display: none;
+    margin: 10px 14px;
+    height: 180px;
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  #manualStart.show { display: flex; }
+  #manualStart p { font-size: 12px; color: var(--muted); }
+  #manualStartBtn {
+    background: var(--accent);
+    border: none;
+    color: #0c1512;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 9px 24px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #manualStartBtn:hover { filter: brightness(1.08); }
+
+  /* 批量面板 */
+  #batchPanel { display: none; border-bottom: 1px solid var(--line); }
+  #batchPanel.show { display: block; }
+  .batch-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .batch-head label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+  #tabList {
+    max-height: 170px;
+    overflow: auto;
+    padding: 0 8px;
+  }
+  #tabList::-webkit-scrollbar { width: 6px; }
+  #tabList::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .tab-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .tab-item:hover { background: var(--panel); }
+  .tab-item img { width: 14px; height: 14px; flex: none; }
+  .tab-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .batch-actions { padding: 8px 14px 12px; }
+  #batchGrab {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    color: #0c1512;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #batchGrab:hover { filter: brightness(1.08); }
+  #batchGrab:disabled { opacity: .5; cursor: default; }
+
+  #meta b { color: var(--text); font-weight: 600; }
+  #preview {
+    margin: 10px 14px;
+    height: 180px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 12px;
+    color: #c7ccd4;
+  }
+  #preview::-webkit-scrollbar { width: 6px; }
+  #preview::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  #stats { padding: 0 14px; font-size: 11px; color: var(--muted); }
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 14px 14px;
+  }
+  .actions button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 9px 0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .actions button:hover { border-color: var(--accent); }
+  .actions button.primary {
+    grid-column: 1 / -1;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0c1512;
+    font-weight: 600;
+  }
+  .actions button.primary:hover { filter: brightness(1.08); }
+  .actions button.copied {
+    background: var(--accent-dim) !important;
+    border-color: var(--accent-dim) !important;
+    color: #fff !important;
+  }
+  #error {
+    margin: 10px 14px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #3a2326;
+    color: #f0b1b8;
+    font-size: 12px;
+    display: none;
+  }
+  .forward { border-top: 1px solid var(--line); padding: 10px 14px 14px; }
+  .forward-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .forward-head select {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 3px 6px;
+    outline: none;
+    max-width: 220px;
+  }
+  .forward-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .forward-btns button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .forward-btns button:hover { border-color: var(--accent); }
+  .forward-tip { margin-top: 8px; font-size: 11px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>抓取网页内容</h1>
+    <div class="seg" id="formatSeg">
+      <button data-format="text" class="active">纯文本</button>
+      <button data-format="markdown">Markdown</button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="seg" id="modeSeg">
+      <button data-mode="smart" class="active">智能提取</button>
+      <button data-mode="full">完整页面</button>
+    </div>
+    <div class="toolbar-right">
+      <label class="auto" title="打开弹窗时自动提取当前页面">
+        <input type="checkbox" id="autoExtract" checked> 自动
+      </label>
+      <button id="batchToggle">批量抓取</button>
+    </div>
+  </div>
+
+  <div id="batchPanel">
+    <div class="batch-head">
+      <label><input type="checkbox" id="selectAll" checked> 全选</label>
+      <span id="batchCount"></span>
+    </div>
+    <div id="tabList"></div>
+    <div class="batch-actions">
+      <button id="batchGrab">抓取选中的标签页</button>
+    </div>
+  </div>
+
+  <div id="metaRow">
+    <div id="meta"></div>
+    <button id="refreshBtn" title="重新提取当前页面">↻ 重新提取</button>
+  </div>
+  <div id="error"></div>
+  <div id="manualStart">
+    <p>自动提取已关闭</p>
+    <button id="manualStartBtn">提取当前页面</button>
+  </div>
+  <div id="preview">正在提取页面内容…</div>
+  <div id="stats"></div>
+
+  <div class="actions">
+    <button id="copyAll" class="primary">一键复制全文</button>
+    <button id="copySelection">复制选中内容</button>
+    <button id="copyLink">复制标题 + 链接</button>
+  </div>
+
+  <div class="forward">
+    <div class="forward-head">
+      <span>转发到 AI</span>
+      <select id="preset">
+        <option value="">仅原文</option>
+        <option value="请总结以下网页内容的要点：">总结要点</option>
+        <option value="请将以下网页内容翻译成中文：">翻译成中文</option>
+        <option value="请基于以下网页内容回答我接下来的问题：">基于内容提问</option>
+        <option value="请根据以下网页内容，整理生成一份规范的 Markdown 格式接口文档。要求包含：接口名称与功能说明、请求地址（URL）与请求方法（GET/POST 等）、请求参数表格（参数名、类型、是否必填、说明）、响应参数表格、请求与响应示例（JSON 代码块）、错误码说明（如有）。内容如下：">生成 Markdown 接口文档</option>
+      </select>
+    </div>
+    <div class="forward-btns">
+      <button data-target="claude">Claude</button>
+      <button data-target="chatgpt">ChatGPT</button>
+      <button data-target="gemini">Gemini</button>
+    </div>
+    <div class="forward-tip">内容会同时复制到剪贴板，自动填入失败时可直接粘贴</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
